@@ -4,8 +4,9 @@ import cors from "cors";
 import bodyParser from "body-parser";  
 import jwt from 'jsonwebtoken'
 import path from "path";
-import { getUserLogin,getRecordList,getRecordData,createRecord,getAllRecordData,getBillList } from "./DbAccessor";
-import { IUserObject,IRecordBody,IRecordData,IAllRecordBody,IBillBody } from "./Types/common";
+import { getUserLogin,getRecordList,getRecordData,createRecord,getAllRecordData,getBillList, deleteRecord } from "./DbAccessor";
+import { IUserObject,IRecordBody,IRecordData,IAllRecordBody,IBillBody,IUpdateBody, ISeachAllBills } from "./Types/common";
+import { log } from "console";
 
 
 export const app: Application = express();
@@ -16,15 +17,17 @@ const APP_PASSWORD  = "@A%^^8BUuw31132"
 app.use((req,res,next)=>{
 
    
-    if(req.path !== "/records" || req.method === "GET") {
+    if( req.method === "GET" || req.path == "/login"   ) {
         return next()
     }
 
-    console.warn(req.path,req.method)
+    
 
     let token = req.headers["authorization"]
+    console.warn("TOKEN",token)
 
     if(!token) {
+        console.warn("Unvalid Token Data")
         return res.send({message:"Invalid Token " + req.path,code:403})
     }
     let tokenData = jwt.verify(token,APP_PASSWORD)
@@ -93,9 +96,11 @@ app.get("/bill",(req:Request<any,any,IBillBody>,res)=>{
 })
 
 
-app.get("/records/all",(req:Request<any,any,any,IAllRecordBody>,res)=>{
+app.get("/records/all",(req:Request<any,any,any,ISeachAllBills>,res)=>{
     let query = req.query
-    getAllRecordData(query.id,query.room_no,query.month,(err,data)=>{
+    console.log("QUERY",query)
+    getAllRecordData(query,(err,data)=>{
+        if(err)res.send(err)
         res.send(data)
     })
     
@@ -103,6 +108,7 @@ app.get("/records/all",(req:Request<any,any,any,IAllRecordBody>,res)=>{
 
 app.get("/records/room",(req:Request<any,any,any,IRecordBody>,res)=>{
     let query = req.query
+    console.log("QUERY ALL",query)
     getRecordData(query.building,query.room_no,query.bill_id,query.month,(err,data)=>{
         if(err) return  res.send(err)
         res.send(data)
@@ -145,4 +151,15 @@ app.post('/records',(req:Request<any,any,IRecordData>,res)=>{
         return res.send({message:"Success",code:200,data:result})
 
     })
+})
+
+app.delete("/records/:code",(req:Request<any,any,any,IUpdateBody>,res)=>{
+    let {code} = req.params
+
+    console.log("CODE",code)
+    deleteRecord(code,(err,data)=>{
+        if(err) res.send(err)
+        res.send({message:"Success",code:200,data})
+    })
+    
 })
