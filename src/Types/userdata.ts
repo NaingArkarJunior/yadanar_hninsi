@@ -23,3 +23,8 @@ export interface BillData extends mysql.RowDataPacket {
     id:number,
     bill_name:string,
 }
+
+export interface DeleteData extends mysql.RowDataPacket {
+    id:string,
+    room_no:string
+}

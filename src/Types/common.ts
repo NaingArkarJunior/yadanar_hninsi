@@ -28,5 +28,20 @@ export interface IRecordData {
     bill_id:number,
     amount:number,
     month:string,
-    code:string
+    code:string,
+    flag:number
+}
+
+export interface IUpdateBody {
+    id:string,
+    room_no : string
+}
+
+
+export interface ISeachAllBills{
+    month?:string,
+    bill_id?:string,
+    code?:string,
+    created_date?:string,
+    date_type?:"date"|"month"
 }
